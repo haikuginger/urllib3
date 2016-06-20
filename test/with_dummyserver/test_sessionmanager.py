@@ -5,7 +5,7 @@ from urllib3.poolmanager import PoolManager
 from urllib3.packages.six import b, u
 from urllib3.packages import six
 
-from dummyserver.testcase import HTTPDummyServerTestCase
+from dummyserver.testcase import HTTPDummyServerTestCase, HTTPSDummyServerTestCase
 
 
 class TestSessionManager(HTTPDummyServerTestCase):
@@ -66,3 +66,23 @@ class TestSessionManager(HTTPDummyServerTestCase):
         route = self.create_url('/set_cookie_and_redirect')
         r = self.manager.request('GET', route, redirect=False)
         self.assertEqual(r.status, 303)
+
+class TestSecureSessionManager(HTTPSDummyServerTestCase):
+
+    def create_url(self, route):
+        return 'https://' + self.host + ':' + str(self.port) + route
+
+    def create_alternate_url(self, route):
+        return 'https://' + self.host_alt + ':' + str(self.port) + route
+
+    def setUp(self):
+        self.manager = SessionManager(PoolManager())
+
+    def test_secure_cookie(self):
+        route = self.create_url('/set_cookie_on_client')
+        r = self.manager.request('GET', route)
+        self.assertEqual(r.status, 200)
+        self.assertTrue(self.manager.context.cookie_jar)
+        route = self.create_url('/verify_cookie')
+        r = self.manager.request('GET', route)
+        self.assertEqual(r.data, b'Received cookie')

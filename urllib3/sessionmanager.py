@@ -40,7 +40,7 @@ class SessionManager(RequestMethods):
         self.manager = manager
         self.context = context or SessionContext()
 
-    def urlopen(self, method, url, redirect=True, retries=None, **kw):
+    def urlopen(self, method, url, body=None, redirect=True, retries=None, redirect_from=None, **kw):
         """
         Same as :meth:`urllib2.poolmanager.PoolManager.urlopen` with added
         request-context-managing special sauce. The received ``url`` param
@@ -55,15 +55,13 @@ class SessionManager(RequestMethods):
             retries = Retry.from_int(retries, redirect=redirect)
 
         # Build a mock Request object to work with
-        request_object = Request(url=url, method=method, headers=headers)
+        request_object = Request(method=method, url=url, headers=headers, body=body)
         self.context.apply_to(request_object)
-        modified_headers = request_object.get_all_headers()
 
         # Ensure that redirects happen at this level only
         kw['redirect'] = False
-        kw['headers'] = modified_headers
 
-        response = self.manager.urlopen(method, url, retries=retries, **kw)
+        response = self.manager.urlopen(**request_object.kw(), retries=retries, **kw)
 
         # Retrieve any context from the response
         self.context.extract_from(response, request_object)

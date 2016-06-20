@@ -4,6 +4,7 @@ import logging
 
 from .filepost import encode_multipart_formdata, iter_field_objects
 from .exceptions import MaxRetryError
+from .util.url import parse_url
 
 from .packages.six.moves.urllib.request import Request as _Request
 from .packages.six.moves.urllib.parse import urlencode
@@ -13,7 +14,7 @@ __all__ = ['RequestMethods', 'Request']
 
 log = logging.getLogger(__name__)
 
-
+'''
 class Request(_Request):
     """
     Currently used as a shim to allow us to work with the stdlib cookie
@@ -46,6 +47,67 @@ class Request(_Request):
         headers = self.unredirected_hdrs.copy()
         headers.update(self.headers)
         return headers
+'''
+
+
+class Request(object):
+
+    def __init__(self, method, url, headers=None, body=None, redirected_by=None):
+        self.method = method
+        self.url = url
+        self.headers = headers or dict()
+        self.body = body
+        self.redirect_source = redirected_by
+        if self.has_header('Cookie'):
+            self._cookies = self.get_header('Cookie').split('; ')
+        else:
+            self._cookies = []
+
+    def add_cookies(self, *cookies):
+        for each in cookies:
+            if each not in self._cookies:
+                self._cookies.append(each)
+        self.headers['Cookie'] = '; '.join(self._cookies)
+
+    def get_full_url(self):
+        return self.full_url
+
+    @property
+    def full_url(self):
+        return self.url
+
+    @property
+    def host(self):
+        return parse_url(self.url).host
+
+    @property
+    def type(self):
+        return parse_url(self.url).scheme
+
+    @property
+    def unverifiable(self):
+        if self.redirect_source and self.redirect_source != self.url:
+            return True
+        else:
+            return False
+
+    @property
+    def origin_req_host(self):
+        return parse_url(self.redirect_source).host or self.host
+
+    def has_header(self, header):
+        return header in self.headers
+
+    def get_header(self, header, default=None):
+        return self.headers.get(header, default)
+
+    def kw(self):
+        return {
+            'method': self.method,
+            'url': self.url,
+            'headers': self.headers,
+            'body': self.body
+        }
 
 
 class RequestMethods(object):
