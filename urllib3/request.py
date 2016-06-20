@@ -6,7 +6,6 @@ from .filepost import encode_multipart_formdata, iter_field_objects
 from .exceptions import MaxRetryError
 from .util.url import parse_url
 
-from .packages.six.moves.urllib.request import Request as _Request
 from .packages.six.moves.urllib.parse import urlencode
 from .packages.six.moves.urllib.parse import urljoin
 
