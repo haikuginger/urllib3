@@ -85,14 +85,17 @@ class Request(object):
 
     @property
     def unverifiable(self):
-        if self.redirect_source and self.redirect_source != self.url:
-            return True
-        else:
-            return False
+        return self.is_unverifiable()
 
     @property
     def origin_req_host(self):
         return parse_url(self.redirect_source).host or self.host
+
+    def is_unverifiable(self):
+        if self.redirect_source and self.redirect_source != self.url:
+            return True
+        else:
+            return False
 
     def has_header(self, header):
         return header in self.headers
