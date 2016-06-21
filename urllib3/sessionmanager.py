@@ -35,10 +35,10 @@ class SessionManager(RequestMethods):
         2
 
     """
-    def __init__(self, manager, context=None, headers=None):
+    def __init__(self, manager, context=None, headers=None, **context_kw):
         super(SessionManager, self).__init__(headers=headers)
         self.manager = manager
-        self.context = context or SessionContext()
+        self.context = context or SessionContext(**context_kw)
 
     def urlopen(self, method, url, body=None, redirect=True,
                 retries=None, redirect_from=None, **kw):
@@ -61,7 +61,7 @@ class SessionManager(RequestMethods):
 
         # Ensure that redirects happen at this level only
         kw['redirect'] = False
-        request_kw = request_object.kw()
+        request_kw = request_object.get_kwargs()
         request_kw.update(kw)
         response = self.manager.urlopen(retries=retries, **request_kw)
 

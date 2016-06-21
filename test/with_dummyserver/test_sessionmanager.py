@@ -23,7 +23,7 @@ class TestSessionManager(HTTPDummyServerTestCase):
         route = self.create_url('/set_cookie_on_client')
         r = self.manager.request('GET', route)
         self.assertEqual(r.status, 200)
-        self.assertTrue(self.manager.context.cookie_jar)
+        self.assertTrue(self.manager.context.handlers[0].cookie_jar)
         route = self.create_url('/verify_cookie')
         r = self.manager.request('GET', route)
         self.assertEqual(r.data, b'Received cookie')
@@ -32,13 +32,13 @@ class TestSessionManager(HTTPDummyServerTestCase):
         route = self.create_url('/set_undomained_cookie_on_client')
         r = self.manager.request('GET', route)
         self.assertEqual(r.status, 200)
-        self.assertTrue(self.manager.context.cookie_jar)
+        self.assertTrue(self.manager.context.handlers[0].cookie_jar)
         route = self.create_alternate_url('/verify_cookie')
         r = self.manager.request('GET', route)
         self.assertEqual(r.status, 400)
 
     def test_merge_cookie_header(self):
-        self.assertFalse(self.manager.context.cookie_jar)
+        self.assertFalse(self.manager.context.handlers[0].cookie_jar)
         headers = {'Cookie': 'testing_cookie=test_cookie_value'}
         route = self.create_url('/verify_cookie')
         r = self.manager.request('GET', route, headers=headers)
@@ -82,7 +82,7 @@ class TestSecureSessionManager(HTTPSDummyServerTestCase):
         route = self.create_url('/set_cookie_on_client')
         r = self.manager.request('GET', route)
         self.assertEqual(r.status, 200)
-        self.assertTrue(self.manager.context.cookie_jar)
+        self.assertTrue(self.manager.context.handlers[0].cookie_jar)
         route = self.create_url('/verify_cookie')
         r = self.manager.request('GET', route)
         self.assertEqual(r.data, b'Received cookie')

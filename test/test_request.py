@@ -127,11 +127,11 @@ class TestRequest(TestCase):
         rq = Request('GET', 'https://google.com', headers={'thingy':'thing2'})
         self.assertEqual(rq.get_header('thingy'), 'thing2')
 
-    def test_kw(self):
+    def test_get_kwargs(self):
         intended_kw = {
             'method': 'GET',
             'url': 'https://google.com',
             'headers': {},
             'body': None
         }
-        self.assertEqual(self.request.kw(), intended_kw)
+        self.assertEqual(self.request.get_kwargs(), intended_kw)

@@ -57,6 +57,7 @@ class Request(object):
         self.headers = headers or dict()
         self.body = body
         self.redirect_source = redirected_by
+        self.kwargs = {}
         if self.has_header('Cookie'):
             self._cookies = self.get_header('Cookie').split('; ')
         else:
@@ -103,13 +104,15 @@ class Request(object):
     def get_header(self, header, default=None):
         return self.headers.get(header, default)
 
-    def kw(self):
-        return {
+    def get_kwargs(self):
+        kw = {
             'method': self.method,
             'url': self.url,
             'headers': self.headers,
             'body': self.body
         }
+        kw.update(self.kwargs)
+        return kw
 
 
 class RequestMethods(object):
